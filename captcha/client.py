@@ -2,6 +2,11 @@ import urllib
 import urllib2
 
 try:
+    import urllib2
+except ImportError:
+    urllib2 = urllib
+
+try:
     import json
 except ImportError:
     from django.utils import simplejson as json
