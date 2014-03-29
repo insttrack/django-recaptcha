@@ -3,7 +3,7 @@ import urllib
 try:
     import urllib2
 except ImportError:
-    urllib2 = urllib
+    urllib2 = urllib.request
 
 try:
     import json
@@ -99,17 +99,28 @@ def submit(recaptcha_challenge_field,
         )
 
     def encode_if_necessary(s):
-        if isinstance(s, unicode):
+        try:
+            if isinstance(s, unicode):
+                return s.encode('utf-8')
+            return s
+        except Exception as e:
             return s.encode('utf-8')
-        return s
-
-    params = urllib.urlencode({
+    
+    try:
+        params = urllib.urlencode({
             'privatekey': encode_if_necessary(private_key),
             'remoteip':  encode_if_necessary(remoteip),
             'challenge':  encode_if_necessary(recaptcha_challenge_field),
             'response':  encode_if_necessary(recaptcha_response_field),
             })
-
+    except Exception as e:
+        params = urllib.parse.urlencode({
+            'privatekey': encode_if_necessary(private_key),
+            'remoteip':  encode_if_necessary(remoteip),
+            'challenge':  encode_if_necessary(recaptcha_challenge_field),
+            'response':  encode_if_necessary(recaptcha_response_field),
+            }).encode('utf-8')
+   
     if use_ssl:
         verify_url = 'https://%s/recaptcha/api/verify' % VERIFY_SERVER
     else:
@@ -130,8 +141,7 @@ def submit(recaptcha_challenge_field,
     httpresp.close()
 
     return_code = return_values[0]
-
-    if (return_code == "true"):
+    if (return_code == "true" or return_code=="true".encode("utf-8")):
         return RecaptchaResponse(is_valid=True)
     else:
         return RecaptchaResponse(is_valid=False, error_code=return_values[1])
