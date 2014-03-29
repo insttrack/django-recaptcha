@@ -1,5 +1,4 @@
 import urllib
-import urllib2
 
 try:
     import urllib2
